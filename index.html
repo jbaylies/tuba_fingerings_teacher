@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tuba Fingering Teacher</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #0f0c29, #1a1a3e, #24243e);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #e0d7c6;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .container {
+    background: rgba(20, 18, 40, 0.85);
+    border: 1px solid rgba(212, 168, 83, 0.25);
+    border-radius: 24px;
+    padding: 32px 48px 28px;
+    max-width: 620px;
+    width: 95%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 80px rgba(212,168,83,0.06);
+    backdrop-filter: blur(12px);
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .header h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    background: linear-gradient(180deg, #f0d78c, #c89b3c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-transform: uppercase;
+  }
+  .header .subtitle {
+    font-size: 0.8rem;
+    color: #7a7894;
+    letter-spacing: 0.08em;
+    margin-top: 4px;
+  }
+
+  /* ---- Staff Area ---- */
+  .staff-wrapper {
+    position: relative;
+    background: #faf6ed;
+    border-radius: 16px;
+    padding: 8px 0;
+    margin-bottom: 14px;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.08);
+    transition: box-shadow 0.35s;
+  }
+  .staff-wrapper.correct-flash {
+    box-shadow: inset 0 0 40px rgba(46,160,67,0.45), 0 0 30px rgba(46,160,67,0.30);
+  }
+  .staff-wrapper.incorrect-flash {
+    box-shadow: inset 0 0 40px rgba(220,53,69,0.45), 0 0 30px rgba(220,53,69,0.30);
+  }
+
+  #staff-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* ---- Note Name & Octave ---- */
+  .note-name-display {
+    text-align: center;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #c89b3c;
+    margin-bottom: 14px;
+    letter-spacing: 0.03em;
+    min-height: 1.7rem;
+    transition: color 0.3s;
+  }
+  .note-name-display .octave-badge {
+    font-size: 0.7rem;
+    color: #7a7894;
+    font-weight: 400;
+    margin-left: 6px;
+  }
+
+  /* ---- Range Selectors ---- */
+  .range-selectors {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .range-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+  .range-group label {
+    font-size: 0.62rem;
+    color: #7a7894;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .range-sep {
+    color: #5a5884;
+    font-size: 1rem;
+    padding-top: 12px;
+  }
+  .range-select {
+    padding: 5px 32px 5px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(200,155,60,0.35);
+    background: rgba(20,18,40,0.7);
+    color: #c89b3c;
+    font-size: 0.78rem;
+    font-family: inherit;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.15s;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23c89b3c'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+  .range-select:hover,
+  .range-select:focus {
+    border-color: rgba(200,155,60,0.7);
+  }
+  .range-select option {
+    background: #1a1a3e;
+    color: #e0d7c6;
+  }
+
+  /* ---- Valve Buttons ---- */
+  .valves-row {
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+    margin-bottom: 18px;
+  }
+
+  .valve-btn {
+    width: 82px;
+    height: 82px;
+    border-radius: 50%;
+    border: 3px solid rgba(200, 155, 60, 0.45);
+    background: radial-gradient(circle at 40% 35%, #e8d5a3, #b8862d 60%, #7a5a1e 100%);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.2);
+    cursor: pointer;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #3d2e0a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.12s ease;
+    position: relative;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .valve-btn:hover {
+    border-color: rgba(240, 215, 140, 0.7);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.45), inset 0 2px 4px rgba(255,255,255,0.25), 0 0 18px rgba(212,168,83,0.25);
+    transform: translateY(-2px);
+  }
+  .valve-btn:active,
+  .valve-btn.pressed {
+    transform: translateY(3px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 3px 10px rgba(0,0,0,0.35);
+    background: radial-gradient(circle at 40% 35%, #c4a870, #8b6914 60%, #5a3e12 100%);
+    border-color: rgba(200, 155, 60, 0.6);
+  }
+  .valve-btn .valve-number {
+    text-shadow: 0 1px 0 rgba(255,255,255,0.2);
+    transition: transform 0.12s;
+  }
+  .valve-btn.pressed .valve-number {
+    transform: scale(0.92);
+  }
+
+  /* ---- Controls Row ---- */
+  .controls-row {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+
+  .submit-btn {
+    padding: 10px 32px;
+    border-radius: 30px;
+    border: 2px solid #c89b3c;
+    background: linear-gradient(180deg, #c89b3c, #9a7328);
+    color: #1a1a2e;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .submit-btn:hover {
+    background: linear-gradient(180deg, #d4a853, #b8862d);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.35), 0 0 20px rgba(212,168,83,0.2);
+    transform: translateY(-1px);
+  }
+  .submit-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+
+  .reset-btn {
+    padding: 10px 22px;
+    border-radius: 30px;
+    border: 1px solid rgba(200,155,60,0.3);
+    background: transparent;
+    color: #8a879e;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .reset-btn:hover {
+    color: #c89b3c;
+    border-color: rgba(200,155,60,0.6);
+  }
+
+  /* ---- Feedback ---- */
+  .feedback {
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    min-height: 1.5rem;
+    transition: all 0.2s;
+  }
+  .feedback.correct { color: #4ade80; }
+  .feedback.incorrect { color: #f87171; }
+
+  /* ---- Score ---- */
+  .score-row {
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+    margin-top: 6px;
+    font-size: 0.82rem;
+    color: #7a7894;
+  }
+  .score-row span {
+    font-weight: 600;
+    color: #c89b3c;
+  }
+
+  /* ---- Keyboard hint ---- */
+  .kb-hint {
+    text-align: center;
+    font-size: 0.68rem;
+    color: #5a5884;
+    margin-top: 10px;
+    letter-spacing: 0.04em;
+  }
+  .kb-hint kbd {
+    display: inline-block;
+    background: rgba(200,155,60,0.12);
+    border: 1px solid rgba(200,155,60,0.25);
+    border-radius: 4px;
+    padding: 2px 6px;
+    margin: 0 2px;
+    font-family: inherit;
+    font-size: 0.7rem;
+    color: #b0a890;
+  }
+
+  @media (max-width: 500px) {
+    .container { padding: 20px 14px 16px; }
+    .header h1 { font-size: 1.35rem; }
+    .valves-row { gap: 14px; }
+    .valve-btn { width: 64px; height: 64px; font-size: 1.4rem; }
+    .submit-btn { padding: 8px 22px; font-size: 0.9rem; }
+    .range-selectors { gap: 6px; }
+    .range-select { padding: 5px 26px 5px 8px; font-size: 0.7rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>Tuba Fingering Teacher</h1>
+    <div class="subtitle">BB♭ Tuba &middot; Bass Clef &middot; 4 Octaves</div>
+  </div>
+
+  <div class="staff-wrapper" id="staffWrapper">
+    <svg id="staff-svg" viewBox="0 0 580 400" preserveAspectRatio="xMidYMid meet"></svg>
+  </div>
+
+  <div class="note-name-display" id="noteNameDisplay">&nbsp;</div>
+
+  <div class="range-selectors">
+    <div class="range-group">
+      <label for="bottomNote">Lowest</label>
+      <select class="range-select" id="bottomNote"></select>
+    </div>
+    <span class="range-sep">&ndash;</span>
+    <div class="range-group">
+      <label for="topNote">Highest</label>
+      <select class="range-select" id="topNote"></select>
+    </div>
+  </div>
+
+  <div class="valves-row">
+    <button class="valve-btn" id="valve1" data-valve="1" aria-label="Toggle valve 1" aria-pressed="false">
+      <span class="valve-number">1</span>
+    </button>
+    <button class="valve-btn" id="valve2" data-valve="2" aria-label="Toggle valve 2" aria-pressed="false">
+      <span class="valve-number">2</span>
+    </button>
+    <button class="valve-btn" id="valve3" data-valve="3" aria-label="Toggle valve 3" aria-pressed="false">
+      <span class="valve-number">3</span>
+    </button>
+  </div>
+
+  <div class="controls-row">
+    <button class="submit-btn" id="submitBtn">Check Fingering</button>
+    <button class="reset-btn" id="resetBtn">New Note</button>
+  </div>
+
+  <div class="feedback" id="feedback" aria-live="polite">&nbsp;</div>
+
+  <div class="score-row">
+    <div>Correct: <span id="correctCount">0</span></div>
+    <div>Attempts: <span id="attemptCount">0</span></div>
+    <div>Streak: <span id="streakCount">0</span></div>
+  </div>
+
+  <div class="kb-hint">
+    Press <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> to toggle valves &middot; <kbd>Enter</kbd> to check &middot; <kbd>R</kbd> for new note
+  </div>
+</div>
+
+<script>
+(function() {
+  // ════════════════════════════════════════════════════════════════
+  //  NOTE DATA — BB♭ Tuba, four octaves (Bb1 → Bb5)
+  // ════════════════════════════════════════════════════════════════
+  //
+  //  staffOffset: y-offset in px from the TOP staff line
+  //    Top line = 0, each half-step space = 7, each line = 14
+  //    Staff lines: 0 (A), 14 (F), 28 (D middle), 42 (B), 56 (G bottom)
+  //
+  //  Each octave has its OWN fingering array. Tubas use different
+  //  fingerings in different octaves — edit each octave independently.
+
+  const NOTES = [
+
+    // ────────── OCTAVE 1 — lowest (Bb₁ → A₂) ──────────
+    // Notes below the bass clef staff, pedal register
+    { id:'Bb1', noteName:'B♭₁', staffOffset:140, accidental:'♭', octave:1, fingering:[  1,3  ] },
+    { id:'B1',  noteName:'B₁',  staffOffset:140, accidental:null,  octave:1, fingering:[2,3] },
+    { id:'C2',  noteName:'C₂',  staffOffset:133, accidental:null,  octave:1, fingering:[1,2  ] },
+    { id:'Db2', noteName:'D♭₂', staffOffset:133, accidental:'♭', octave:1, fingering:[1  ] },
+    { id:'D2',  noteName:'D₂',  staffOffset:126, accidental:null,  octave:1, fingering:[2  ] },
+    { id:'Eb2', noteName:'E♭₂', staffOffset:126, accidental:'♭', octave:1, fingering:[    ] },
+    { id:'E2',  noteName:'E₂',  staffOffset:119, accidental:null,  octave:1, fingering:[1,2,3    ] },
+    { id:'F2',  noteName:'F₂',  staffOffset:112, accidental:null,  octave:1, fingering:[1,3     ] },
+    { id:'Gb2', noteName:'G♭₂', staffOffset:105, accidental:'♭', octave:1, fingering:[2,3  ] },
+    { id:'G2',  noteName:'G₂',  staffOffset:105, accidental:null,  octave:1, fingering:[1,2  ] },
+    { id:'Ab2', noteName:'A♭₂', staffOffset:98,  accidental:'♭', octave:1, fingering:[1    ] },
+    { id:'A2',  noteName:'A₂',  staffOffset:98,  accidental:null,  octave:1, fingering:[2    ] },
+
+    // ────────── OCTAVE 2 — low (B♭₂ → A₃) ──────────
+    // On the bass clef staff (bottom half)
+    { id:'Bb2', noteName:'B♭₂', staffOffset:91, accidental:'♭', octave:2, fingering:[     ] },
+    { id:'B2',  noteName:'B₂',  staffOffset:91, accidental:null,  octave:2, fingering:[1,2,3] },
+    { id:'C3',  noteName:'C₃',  staffOffset:84, accidental:null,  octave:2, fingering:[1,3  ] },
+    { id:'Db3', noteName:'D♭₃', staffOffset:77, accidental:'♭', octave:2, fingering:[2,3  ] },
+    { id:'D3',  noteName:'D₃',  staffOffset:77, accidental:null,  octave:2, fingering:[1,2  ] },
+    { id:'Eb3', noteName:'E♭₃', staffOffset:70, accidental:'♭', octave:2, fingering:[1    ] },
+    { id:'E3',  noteName:'E₃',  staffOffset:70, accidental:null,  octave:2, fingering:[2    ] },
+    { id:'F3',  noteName:'F₃',  staffOffset:63, accidental:null,  octave:2, fingering:[     ] },
+    { id:'Gb3', noteName:'G♭₃', staffOffset:56, accidental:'♭', octave:2, fingering:[2,3  ] },
+    { id:'G3',  noteName:'G₃',  staffOffset:56, accidental:null,  octave:2, fingering:[1,2  ] },
+    { id:'Ab3', noteName:'A♭₃', staffOffset:49, accidental:'♭', octave:2, fingering:[1    ] },
+    { id:'A3',  noteName:'A₃',  staffOffset:49, accidental:null,  octave:2, fingering:[2    ] },
+
+    // ────────── OCTAVE 3 — middle (B♭₃ → A₄) ──────────
+    // Top of bass clef staff & just above
+    { id:'Bb3', noteName:'B♭₃', staffOffset:42,  accidental:'♭', octave:3, fingering:[     ] },
+    { id:'B3',  noteName:'B₃',  staffOffset:42,  accidental:null,  octave:3, fingering:[1,2  ] },
+    { id:'C4',  noteName:'C₄',  staffOffset:35,  accidental:null,  octave:3, fingering:[1    ] },
+    { id:'Db4', noteName:'D♭₄', staffOffset:28,  accidental:'♭', octave:3, fingering:[2  ] },
+    { id:'D4',  noteName:'D₄',  staffOffset:28,  accidental:null,  octave:3, fingering:[  ] },
+    { id:'Eb4', noteName:'E♭₄', staffOffset:21,  accidental:'♭', octave:3, fingering:[1    ] },
+    { id:'E4',  noteName:'E₄',  staffOffset:21,  accidental:null,  octave:3, fingering:[2    ] },
+    { id:'F4',  noteName:'F₄',  staffOffset:14,  accidental:null,  octave:3, fingering:[     ] },
+    { id:'Gb4', noteName:'G♭₄', staffOffset:7,   accidental:'♭', octave:3, fingering:[2,3  ] },
+    { id:'G4',  noteName:'G₄',  staffOffset:7,   accidental:null,  octave:3, fingering:[1,2  ] },
+    { id:'Ab4', noteName:'A♭₄', staffOffset:0,   accidental:'♭', octave:3, fingering:[1    ] },
+    { id:'A4',  noteName:'A₄',  staffOffset:0,   accidental:null,  octave:3, fingering:[2    ] },
+
+    // ────────── OCTAVE 4 — high (B♭₄ → A₅) ──────────
+    // Several ledger lines above bass clef staff
+    { id:'Bb4', noteName:'B♭₄', staffOffset:-7,  accidental:'♭', octave:4, fingering:[     ] },
+    { id:'B4',  noteName:'B₄',  staffOffset:-7,  accidental:null,  octave:4, fingering:[1,2  ] },
+    { id:'C5',  noteName:'C₅',  staffOffset:-14, accidental:null,  octave:4, fingering:[1,   ] },
+    { id:'Db5', noteName:'D♭₅', staffOffset:-21, accidental:'♭', octave:4, fingering:[2    ] },
+    { id:'D5',  noteName:'D₅',  staffOffset:-21, accidental:null,  octave:4, fingering:[     ] },
+    { id:'Eb5', noteName:'E♭₅', staffOffset:-28, accidental:'♭', octave:4, fingering:[1    ] },
+    { id:'E5',  noteName:'E₅',  staffOffset:-28, accidental:null,  octave:4, fingering:[2    ] },
+    { id:'F5',  noteName:'F₅',  staffOffset:-35, accidental:null,  octave:4, fingering:[     ] },
+    { id:'Gb5', noteName:'G♭₅', staffOffset:-42, accidental:'♭', octave:4, fingering:[2,3  ] },
+    { id:'G5',  noteName:'G₅',  staffOffset:-42, accidental:null,  octave:4, fingering:[1,2  ] },
+    { id:'Ab5', noteName:'A♭₅', staffOffset:-49, accidental:'♭', octave:4, fingering:[1    ] },
+    { id:'A5',  noteName:'A₅',  staffOffset:-49, accidental:null,  octave:4, fingering:[2    ] },
+
+    // ────────── OCTAVE 5 — top note (B♭₅) ──────────
+    { id:'Bb5', noteName:'B♭₅', staffOffset:-56, accidental:'♭', octave:5, fingering:[     ] },
+  ];
+
+  // ──────────────────────────────────────
+  // State
+  // ──────────────────────────────────────
+  let currentNote     = null;
+  let pressedValves   = new Set();
+  let correctCount    = 0;
+  let attemptCount    = 0;
+  let streakCount     = 0;
+  let feedbackTimeout = null;
+  let flashTimeout    = null;
+  let lastNoteId      = null;
+  let acceptingAnswer = true;
+  let rangeBottomIdx  = 0;           // inclusive lower bound (index into NOTES)
+  let rangeTopIdx     = NOTES.length - 1; // inclusive upper bound
+
+  // ──────────────────────────────────────
+  // DOM refs
+  // ──────────────────────────────────────
+  const svgEl        = document.getElementById('staff-svg');
+  const staffWrapper = document.getElementById('staffWrapper');
+  const noteNameEl   = document.getElementById('noteNameDisplay');
+  const feedbackEl   = document.getElementById('feedback');
+  const correctEl    = document.getElementById('correctCount');
+  const attemptEl    = document.getElementById('attemptCount');
+  const streakEl     = document.getElementById('streakCount');
+  const submitBtn    = document.getElementById('submitBtn');
+  const resetBtn     = document.getElementById('resetBtn');
+  const valveBtns    = [1,2,3].map(n => document.getElementById('valve'+n));
+  const bottomSelect = document.getElementById('bottomNote');
+  const topSelect    = document.getElementById('topNote');
+
+  // ──────────────────────────────────────
+  // SVG drawing constants
+  // ──────────────────────────────────────
+  const STAFF_TOP    = 220;
+  const LINE_SPACING = 14;
+  const STAFF_LEFT   = 80;
+  const STAFF_RIGHT  = 530;
+  const NOTE_X       = 270;
+
+  function staffY(lineIndex) {
+    return STAFF_TOP + lineIndex * LINE_SPACING;
+  }
+
+  function noteY(offset) {
+    return STAFF_TOP + offset;
+  }
+
+  // ──────────────────────────────────────
+  // Render the SVG staff + note
+  // ──────────────────────────────────────
+  function renderStaff(note) {
+    let html = '';
+
+    html += `<rect x="0" y="0" width="580" height="400" fill="#faf6ed" rx="8"/>`;
+
+    for (let i = 0; i < 5; i++) {
+      const y = staffY(i);
+      html += `<line x1="${STAFF_LEFT}" y1="${y}" x2="${STAFF_RIGHT}" y2="${y}" stroke="#333" stroke-width="1.1"/>`;
+    }
+
+    const clefY = STAFF_TOP + 14;
+    html += `
+      <g transform="translate(72,${clefY})">
+        <path d="M 4 -2 C -16 -1,-32 -28,-28 -52 C -24 -72,2 -78,35 -62
+                 C 62 -48,60 -10,48 28 C 42 46,32 62,30 72
+                 C 28 79,38 82,42 74"
+              fill="none" stroke="#222" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="3" cy="0" r="5" fill="#222"/>
+        <circle cx="-8" cy="0" r="2.4" fill="#222"/>
+        <circle cx="22" cy="0" r="2.4" fill="#222"/>
+      </g>`;
+
+    if (!note) {
+      svgEl.innerHTML = html;
+      return;
+    }
+
+    const ny = noteY(note.staffOffset);
+
+    // ── Ledger lines ──
+    if (note.staffOffset <= -14) {
+      for (let off = -14; off >= note.staffOffset - 7; off -= 14) {
+        const ly = noteY(off);
+        html += `<line x1="${NOTE_X - 16}" y1="${ly}" x2="${NOTE_X + 16}" y2="${ly}" stroke="#333" stroke-width="1.1"/>`;
+      }
+    }
+    if (note.staffOffset > 56) {
+      for (let off = 70; off <= note.staffOffset + 7; off += 14) {
+        const ly = noteY(off);
+        html += `<line x1="${NOTE_X - 16}" y1="${ly}" x2="${NOTE_X + 16}" y2="${ly}" stroke="#333" stroke-width="1.1"/>`;
+      }
+    }
+
+    // ── Accidental ──
+    if (note.accidental) {
+      html += `<text x="${NOTE_X - 24}" y="${ny + 6}" font-size="28" fill="#222" font-family="serif" text-anchor="middle">${note.accidental}</text>`;
+    }
+
+    // ── Note head ──
+    const headW = 17;
+    const headH = 12;
+    html += `<ellipse cx="${NOTE_X}" cy="${ny}" rx="${headW/2}" ry="${headH/2}" fill="#222" transform="rotate(-8,${NOTE_X},${ny})"/>`;
+
+    // ── Stem ──
+    const stemDir = note.staffOffset > 28 ? 'up' : 'down';
+    const stemLength = 42;
+    if (stemDir === 'up') {
+      html += `<line x1="${NOTE_X + headW/2}" y1="${ny}" x2="${NOTE_X + headW/2}" y2="${ny - stemLength}" stroke="#222" stroke-width="1.8"/>`;
+    } else {
+      html += `<line x1="${NOTE_X - headW/2}" y1="${ny}" x2="${NOTE_X - headW/2}" y2="${ny + stemLength}" stroke="#222" stroke-width="1.8"/>`;
+    }
+
+    // ── Note label ──
+    html += `<text x="${STAFF_RIGHT - 16}" y="${STAFF_TOP - 26}" font-size="13" fill="#999" text-anchor="end">${note.noteName}</text>`;
+
+    svgEl.innerHTML = html;
+  }
+
+  // ──────────────────────────────────────
+  // Rendering
+  // ──────────────────────────────────────
+  function updateUI() {
+    renderStaff(currentNote);
+
+    if (currentNote) {
+      noteNameEl.innerHTML = `Note: ${currentNote.noteName} <span class="octave-badge">Octave ${currentNote.octave}</span>`;
+    } else {
+      noteNameEl.innerHTML = '&nbsp;';
+    }
+
+    valveBtns.forEach((btn, i) => {
+      const valve = i + 1;
+      const isPressed = pressedValves.has(valve);
+      if (isPressed) {
+        btn.classList.add('pressed');
+      } else {
+        btn.classList.remove('pressed');
+      }
+      btn.setAttribute('aria-pressed', isPressed ? 'true' : 'false');
+    });
+
+    correctEl.textContent = correctCount;
+    attemptEl.textContent = attemptCount;
+    streakEl.textContent  = streakCount;
+  }
+
+  // ──────────────────────────────────────
+  // Populate range dropdowns
+  // ──────────────────────────────────────
+  function populateRangeSelects() {
+    bottomSelect.innerHTML = '';
+    topSelect.innerHTML = '';
+    NOTES.forEach((note, i) => {
+      const optA = document.createElement('option');
+      optA.value = i;
+      optA.textContent = note.noteName;
+      const optB = document.createElement('option');
+      optB.value = i;
+      optB.textContent = note.noteName;
+      bottomSelect.appendChild(optA);
+      topSelect.appendChild(optB);
+    });
+    bottomSelect.value = rangeBottomIdx;
+    topSelect.value    = rangeTopIdx;
+  }
+
+  // ──────────────────────────────────────
+  // Pick a random note within [rangeBottomIdx, rangeTopIdx]
+  // ──────────────────────────────────────
+  function pickRandomNote() {
+    const pool = NOTES.slice(rangeBottomIdx, rangeTopIdx + 1);
+    if (pool.length === 0) return NOTES[0];
+
+    // If only one note available, always return it (ignore lastNoteId)
+    if (pool.length === 1) {
+      lastNoteId = pool[0].id;
+      return pool[0];
+    }
+
+    const candidates = pool.filter(n => n.id !== lastNoteId);
+    const pick = candidates.length > 0
+      ? candidates[Math.floor(Math.random() * candidates.length)]
+      : pool[Math.floor(Math.random() * pool.length)];
+    lastNoteId = pick.id;
+    return pick;
+  }
+
+  function newNote() {
+    currentNote = pickRandomNote();
+    pressedValves.clear();
+    clearFeedback();
+    acceptingAnswer = true;
+    updateUI();
+  }
+
+  // ──────────────────────────────────────
+  // Feedback
+  // ──────────────────────────────────────
+  function clearFeedback() {
+    if (feedbackTimeout) { clearTimeout(feedbackTimeout); feedbackTimeout = null; }
+    if (flashTimeout)    { clearTimeout(flashTimeout);    flashTimeout    = null; }
+    feedbackEl.textContent = '\u00A0';
+    feedbackEl.className   = 'feedback';
+    staffWrapper.classList.remove('correct-flash', 'incorrect-flash');
+  }
+
+  function showFeedback(correct) {
+    clearFeedback();
+
+    if (correct) {
+      feedbackEl.textContent   = '✓ Correct!';
+      feedbackEl.className     = 'feedback correct';
+      staffWrapper.classList.add('correct-flash');
+      flashTimeout = setTimeout(() => {
+        staffWrapper.classList.remove('correct-flash');
+        flashTimeout = null;
+      }, 500);
+    } else {
+      feedbackEl.textContent   = '✗ Incorrect';
+      feedbackEl.className     = 'feedback incorrect';
+      staffWrapper.classList.add('incorrect-flash');
+      flashTimeout = setTimeout(() => {
+        staffWrapper.classList.remove('incorrect-flash');
+        flashTimeout = null;
+      }, 500);
+    }
+
+    feedbackTimeout = setTimeout(() => {
+      feedbackEl.textContent = '\u00A0';
+      feedbackEl.className   = 'feedback';
+      feedbackTimeout = null;
+    }, 1800);
+  }
+
+  // ──────────────────────────────────────
+  // Check answer
+  // ──────────────────────────────────────
+  function checkAnswer() {
+    if (!currentNote || !acceptingAnswer) return;
+
+    const expected = new Set(currentNote.fingering);
+    const isCorrect =
+      pressedValves.size === expected.size &&
+      [...pressedValves].every(v => expected.has(v));
+
+    attemptCount++;
+    if (isCorrect) {
+      correctCount++;
+      streakCount++;
+      showFeedback(true);
+      acceptingAnswer = false;
+      setTimeout(() => {
+        newNote();
+      }, 600);
+    } else {
+      streakCount = 0;
+      showFeedback(false);
+      updateUI();
+    }
+  }
+
+  // ──────────────────────────────────────
+  // Valve toggling
+  // ──────────────────────────────────────
+  function toggleValve(valve) {
+    if (pressedValves.has(valve)) {
+      pressedValves.delete(valve);
+    } else {
+      pressedValves.add(valve);
+    }
+    clearFeedback();
+    updateUI();
+  }
+
+  // ──────────────────────────────────────
+  // Range change handlers
+  // ──────────────────────────────────────
+  function onBottomChange() {
+    let newBottom = parseInt(bottomSelect.value, 10);
+    const newTop = parseInt(topSelect.value, 10);
+    if (newBottom > newTop) {
+      newBottom = newTop;
+      bottomSelect.value = newBottom;
+    }
+    rangeBottomIdx = newBottom;
+    rangeTopIdx    = newTop;
+    newNote();
+  }
+
+  function onTopChange() {
+    const newBottom = parseInt(bottomSelect.value, 10);
+    let newTop = parseInt(topSelect.value, 10);
+    if (newTop < newBottom) {
+      newTop = newBottom;
+      topSelect.value = newTop;
+    }
+    rangeBottomIdx = newBottom;
+    rangeTopIdx    = newTop;
+    newNote();
+  }
+
+  bottomSelect.addEventListener('change', onBottomChange);
+  topSelect.addEventListener('change', onTopChange);
+
+  // ──────────────────────────────────────
+  // Event listeners
+  // ──────────────────────────────────────
+  valveBtns.forEach((btn, i) => {
+    btn.addEventListener('click', () => toggleValve(i + 1));
+  });
+
+  submitBtn.addEventListener('click', checkAnswer);
+  resetBtn.addEventListener('click', () => newNote());
+
+  document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+
+    if (e.key === '1' || e.key === '2' || e.key === '3') {
+      e.preventDefault();
+      toggleValve(parseInt(e.key, 10));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      checkAnswer();
+    } else if (e.key === 'r' || e.key === 'R') {
+      e.preventDefault();
+      newNote();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      pressedValves.clear();
+      clearFeedback();
+      updateUI();
+    }
+  });
+
+  // ──────────────────────────────────────
+  // Initialize
+  // ──────────────────────────────────────
+  populateRangeSelects();
+  newNote();
+})();
+</script>
+
+</body>
+</html>
